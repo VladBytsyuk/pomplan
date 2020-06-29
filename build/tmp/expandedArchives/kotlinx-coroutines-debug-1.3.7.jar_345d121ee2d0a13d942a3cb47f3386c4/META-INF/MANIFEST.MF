@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Premain-Class: kotlinx.coroutines.debug.AgentPremain
+Can-Redefine-Classes: true
+Class-Path: jna-platform-5.5.0.jar jna-5.5.0.jar kotlinx-coroutines-core
+ -jvm-1.3.7.jar kotlin-stdlib-1.3.71.jar kotlin-stdlib-common-1.3.71.jar
+  annotations-13.0.jar
+

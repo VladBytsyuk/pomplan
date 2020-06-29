@@ -1,0 +1,13 @@
+/home/vbytsyuk/Git/pomodoro/src/jsMain/kotlin/sample/SampleJs.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/sample/Sample.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/screens/Settings.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/screens/App.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/screens/Statistics.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/screens/Pomodoro.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/screens/SignIn.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/screens/social/SocialSignIn.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/api/ApiResult.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/api/AuthApi.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/utils/Result.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/core/elm/Example.kt
+/home/vbytsyuk/Git/pomodoro/src/commonMain/kotlin/com/vbytsyuk/pomodoro/elm/Elm.kt
