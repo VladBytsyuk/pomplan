@@ -2,8 +2,10 @@ package com.vbytsyuk.pomodoro.core.screens
 
 import com.vbytsyuk.pomodoro.core.api.SettingsRepository
 import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.seconds
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.State.LogicState.*
 import com.vbytsyuk.pomodoro.elm.Elm
+import kotlinx.coroutines.delay
 
 
 class Pomodoro(
@@ -20,7 +22,8 @@ class Pomodoro(
     data class State(
         val rules: Rules = Rules(),
         val logicState: LogicState = WaitForWork,
-        val currentSession: Int = 1
+        val currentSession: Int = 1,
+        val time: PomodoroTime = PomodoroTime(minutes = 0, seconds = 0)
     ) : Elm.State {
         data class Rules(
             val workTime: PomodoroTime = PomodoroTime(minutes = 25),
@@ -36,36 +39,47 @@ class Pomodoro(
             object Break : LogicState()
         }
 
-        fun changeLogicState(newLogicState: LogicState) = copy(logicState = newLogicState)
+        fun changeLogicState(newLogicState: LogicState, newCurrentSession: Int = this.currentSession) =
+            copy(logicState = newLogicState, currentSession = newCurrentSession)
+
+        fun addSecond() = copy(time = time.addSecond())
+        fun takeSecond() = copy(time = time.takeSecond())
+
+        fun addSession() = copy(currentSession = this.currentSession + 1)
     }
 
     sealed class Action : Elm.Action {
         object Initialize : Action()
-        data class LoadedPomodoroRules(val rules: State.Rules) : Action()
+        data class LoadedRules(val rules: State.Rules) : Action()
         sealed class Clicked : Action() {
             object PlayPause : Clicked()
             object Stop : Clicked()
             object Skip : Clicked()
         }
-        sealed class Control : Action() {
-            object PlusSecond : Control()
-            object MinusSecond : Control()
-        }
+        object Tick : Action()
+        object Done : Action()
     }
 
     sealed class Effect : Elm.Effect {
-        object LoadPomodoroRules : Effect()
+        object LoadRules : Effect()
+        object Tick : Effect()
+        object Done : Effect()
     }
 
     class EffectHandler(private val settingsRepository: SettingsRepository) : Elm.EffectHandler<Effect, Action> {
         override suspend fun handle(effect: Effect): Action = when (effect) {
-            Effect.LoadPomodoroRules -> {
-                val rules = loadPomodoroRules()
-                Action.LoadedPomodoroRules(rules)
+            Effect.LoadRules -> {
+                val rules = loadRules()
+                Action.LoadedRules(rules)
             }
+            Effect.Tick -> {
+                delay(1.seconds)
+                Action.Tick
+            }
+            Effect.Done -> Action.Done
         }
 
-        private suspend fun loadPomodoroRules(): State.Rules = State.Rules(
+        private suspend fun loadRules(): State.Rules = State.Rules(
             workTime = settingsRepository.getWorkTime(),
             shortBreakTime = settingsRepository.getShortBreakTime(),
             longBreakTime = settingsRepository.getLongBreakTime(),
@@ -75,18 +89,23 @@ class Pomodoro(
 
     class Reducer : Elm.Reducer<State, Action, Effect> {
         override fun reduce(oldState: State, action: Action): Pair<State, Effect?> = when (action) {
-            Action.Initialize -> State() to Effect.LoadPomodoroRules
-            is Action.LoadedPomodoroRules -> oldState.copy(rules = action.rules) to null
+            Action.Initialize -> State() to Effect.LoadRules
+            is Action.LoadedRules -> oldState.copy(rules = action.rules) to null
 
             is Action.Clicked -> reduceClicked(oldState, action)
-            is Action.Control -> reduceControl(oldState, action)
+            Action.Tick -> reduceTick(oldState)
+            Action.Done -> when (oldState.logicState) {
+                Work ->  oldState.changeLogicState(WaitForBreak) to null
+                Break ->  oldState.changeLogicState(WaitForWork) to null
+                else ->  oldState to null
+            }
         }
 
         private fun reduceClicked(oldState: State, action: Action.Clicked): Pair<State, Effect?> = when (action) {
             Action.Clicked.PlayPause -> when (oldState.logicState) {
-                WaitForWork ->  oldState.changeLogicState(Work) to null
+                WaitForWork ->  oldState.changeLogicState(Work) to Effect.Tick
                 Work ->  oldState.changeLogicState(WaitForWork) to null
-                WaitForBreak ->  oldState.changeLogicState(Break) to null
+                WaitForBreak ->  oldState.changeLogicState(Break) to Effect.Tick
                 Break ->  oldState.changeLogicState(WaitForBreak) to null
             }
 
@@ -99,10 +118,25 @@ class Pomodoro(
             }
         }
 
+        private fun reduceTick(oldState: State): Pair<State, Effect?> = when (oldState.logicState) {
+            Work -> {
+                val stateWithUpdatedTime = oldState.takeSecond()
+                val effect = if (stateWithUpdatedTime.time <= 0) Effect.Done else Effect.Tick
+                stateWithUpdatedTime to effect
+            }
+            Break -> {
+                val rules = oldState.rules
+                val isLongBreak = oldState.currentSession % rules.sessionLength == 0
+                val breakTime = if (isLongBreak) rules.longBreakTime else rules.shortBreakTime
 
-        private fun reduceControl(oldState: State, action: Action.Control): Pair<State, Effect?> = when (action) {
-            Action.Control.PlusSecond -> TODO()
-            Action.Control.MinusSecond -> TODO()
+                val stateWithUpdatedTime = oldState.addSecond()
+                val isDone = stateWithUpdatedTime.time >= breakTime
+                val effect = if (isDone) Effect.Done else Effect.Tick
+
+                val newState = if (isLongBreak && isDone) stateWithUpdatedTime.addSession() else stateWithUpdatedTime
+                newState to effect
+            }
+            else -> oldState to null
         }
     }
 }

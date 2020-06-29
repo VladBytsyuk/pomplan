@@ -8,21 +8,24 @@ data class PomodoroTime(val timestamp: Long) {
     val milliseconds: Long get() = timestamp % MILLIS_IN_SECOND
 
     fun addMinutes(n: Int): PomodoroTime = this.copy(timestamp = timestamp + n * MILLIS_IN_MINUTE)
-    fun addMinute(n: Int): PomodoroTime = this.addMinutes(n = 1)
+    fun addMinute(): PomodoroTime = this.addMinutes(n = 1)
     fun takeMinutes(n: Int): PomodoroTime = this.copy(timestamp = timestamp - n * MILLIS_IN_MINUTE)
-    fun takeMinute(n: Int): PomodoroTime = this.takeMinutes(n = 1)
+    fun takeMinute(): PomodoroTime = this.takeMinutes(n = 1)
 
 
     fun addSeconds(n: Int): PomodoroTime = this.copy(timestamp = timestamp + n * MILLIS_IN_SECOND)
-    fun addSecond(n: Int): PomodoroTime = this.addSecond(n = 1)
+    fun addSecond(): PomodoroTime = this.addSeconds(n = 1)
     fun takeSeconds(n: Int): PomodoroTime = this.copy(timestamp = timestamp - n * MILLIS_IN_SECOND)
-    fun takeSecond(n: Int): PomodoroTime = this.takeSecond(n = 1)
+    fun takeSecond(): PomodoroTime = this.takeSeconds(n = 1)
 
 
     fun addMilliseconds(n: Int): PomodoroTime = this.copy(timestamp = timestamp + n)
-    fun addMillisecond(n: Int): PomodoroTime = this.addMilliseconds(n = 1)
+    fun addMillisecond(): PomodoroTime = this.addMilliseconds(n = 1)
     fun takeMilliseconds(n: Int): PomodoroTime = this.copy(timestamp = timestamp - n)
-    fun takeMillisecond(n: Int): PomodoroTime = this.takeMilliseconds(n = 1)
+    fun takeMillisecond(): PomodoroTime = this.takeMilliseconds(n = 1)
+
+    operator fun compareTo(other: PomodoroTime): Int = this.timestamp.compareTo(other.timestamp)
+    operator fun compareTo(other: Int): Int = this.timestamp.compareTo(other.toLong())
 }
 
 fun PomodoroTime(minutes: Int, seconds: Int = 0): PomodoroTime {
