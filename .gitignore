@@ -3,9 +3,9 @@
 gradle/wrapper/gradle-wrapper.properties
 /local.properties
 /captures
-.gradle
-/.idea/*
-build/
+.gradle/*
+.idea/*
+build/*
 
 !/.idea/codeStyles/*
 !/.idea/inspectionProfiles/*
