@@ -21,7 +21,7 @@ class Pomodoro(
 
     data class State(
         val rules: Rules = Rules(),
-        val logicState: LogicState = WaitForWork,
+        val logicState: LogicState = WAIT_FOR_WORK,
         val currentSession: Int = 1,
         val time: PomodoroTime = PomodoroTime(minutes = 0, seconds = 0)
     ) : Elm.State {
@@ -32,12 +32,7 @@ class Pomodoro(
             val sessionLength: Int = 4
         )
 
-        sealed class LogicState {
-            object WaitForWork : LogicState()
-            object Work : LogicState()
-            object WaitForBreak : LogicState()
-            object Break : LogicState()
-        }
+        enum class LogicState { WAIT_FOR_WORK, WORK, WAIT_FOR_BREAK, BREAK }
 
         fun changeLogicState(newLogicState: LogicState, newCurrentSession: Int = this.currentSession) =
             copy(logicState = newLogicState, currentSession = newCurrentSession)
@@ -90,41 +85,42 @@ class Pomodoro(
     class Reducer : Elm.Reducer<State, Action, Effect> {
         override fun reduce(oldState: State, action: Action): Pair<State, Effect?> = when (action) {
             Action.Initialize -> State() to Effect.LoadRules
-            is Action.LoadedRules -> oldState.copy(rules = action.rules) to null
+            is Action.LoadedRules ->
+                oldState.copy(logicState = WAIT_FOR_WORK, rules = action.rules, time = action.rules.workTime) to null
 
             is Action.Clicked -> reduceClicked(oldState, action)
             Action.Tick -> reduceTick(oldState)
             Action.Done -> when (oldState.logicState) {
-                Work ->  oldState.changeLogicState(WaitForBreak) to null
-                Break ->  oldState.changeLogicState(WaitForWork) to null
+                WORK ->  oldState.copy(logicState = WAIT_FOR_BREAK, time = PomodoroTime(minutes = 0)) to null
+                BREAK ->  oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
                 else ->  oldState to null
             }
         }
 
         private fun reduceClicked(oldState: State, action: Action.Clicked): Pair<State, Effect?> = when (action) {
             Action.Clicked.PlayPause -> when (oldState.logicState) {
-                WaitForWork ->  oldState.changeLogicState(Work) to Effect.Tick
-                Work ->  oldState.changeLogicState(WaitForWork) to null
-                WaitForBreak ->  oldState.changeLogicState(Break) to Effect.Tick
-                Break ->  oldState.changeLogicState(WaitForBreak) to null
+                WAIT_FOR_WORK ->  oldState.changeLogicState(WORK) to Effect.Tick
+                WORK ->  oldState.changeLogicState(WAIT_FOR_WORK) to null
+                WAIT_FOR_BREAK ->  oldState.changeLogicState(BREAK) to Effect.Tick
+                BREAK ->  oldState.changeLogicState(WAIT_FOR_BREAK) to null
             }
 
-            Action.Clicked.Stop -> oldState.copy(logicState = WaitForWork) to null
+            Action.Clicked.Stop -> oldState.copy(logicState = WAIT_FOR_WORK) to null
 
             Action.Clicked.Skip ->  when (oldState.logicState) {
-                WaitForWork -> oldState.changeLogicState(WaitForBreak) to null
-                WaitForBreak -> oldState.changeLogicState(WaitForWork) to null
+                WAIT_FOR_WORK -> oldState.changeLogicState(WAIT_FOR_BREAK) to null
+                WAIT_FOR_BREAK -> oldState.changeLogicState(WAIT_FOR_WORK) to null
                 else -> oldState to null
             }
         }
 
         private fun reduceTick(oldState: State): Pair<State, Effect?> = when (oldState.logicState) {
-            Work -> {
+            WORK -> {
                 val stateWithUpdatedTime = oldState.takeSecond()
                 val effect = if (stateWithUpdatedTime.time <= 0) Effect.Done else Effect.Tick
                 stateWithUpdatedTime to effect
             }
-            Break -> {
+            BREAK -> {
                 val rules = oldState.rules
                 val isLongBreak = oldState.currentSession % rules.sessionLength == 0
                 val breakTime = if (isLongBreak) rules.longBreakTime else rules.shortBreakTime

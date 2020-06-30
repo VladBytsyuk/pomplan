@@ -10,7 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 
-class SignInTest {
+class `Sign In screen` {
 
     @Test
     fun `SignIn initialization`() = test(
@@ -22,6 +22,7 @@ class SignInTest {
     @Test
     fun `Successful sign in by password`() = test(
         actions = listOf(
+            Action.Initialize,
             Action.Changed.Login(CORRECT_LOGIN),
             Action.Changed.Password(CORRECT_PASSWORD),
             Action.Clicked.SignIn
@@ -36,6 +37,7 @@ class SignInTest {
     @Test
     fun `Failure sign in by password`() = test(
         actions = listOf(
+            Action.Initialize,
             Action.Changed.Login(CORRECT_LOGIN),
             Action.Changed.Password(INCORRECT_PASSWORD),
             Action.Clicked.SignIn
@@ -50,6 +52,7 @@ class SignInTest {
     @Test
     fun `Failure sign in by login`() = test(
         actions = listOf(
+            Action.Initialize,
             Action.Changed.Login(INCORRECT_LOGIN),
             Action.Changed.Password(CORRECT_PASSWORD),
             Action.Clicked.SignIn
@@ -64,6 +67,7 @@ class SignInTest {
     @Test
     fun `Failure sign in by login & password`() = test(
         actions = listOf(
+            Action.Initialize,
             Action.Changed.Login(INCORRECT_LOGIN),
             Action.Changed.Password(INCORRECT_PASSWORD),
             Action.Clicked.SignIn
@@ -79,6 +83,7 @@ class SignInTest {
     @Test
     fun `Successful sign in by google`() = test(
         actions = listOf(
+            Action.Initialize,
             Action.Clicked.Social(SocialNetwork.GOOGLE)
         ),
         expectedState = State(
@@ -102,16 +107,16 @@ class SignInTest {
         actions: List<Action>,
         expectedState: State
     ) = runBlockingTest {
-        val signInScreenController = SignIn(authApiMock, googleSignIn, appleSignIn, twitterSignIn).controller
-        signInScreenController.attach()
+        val controller = SignIn(authApiMock, googleSignIn, appleSignIn, twitterSignIn).controller
+        controller.attach()
 
         actions.forEach {
-            signInScreenController.setAction(it)
+            controller.setAction(it)
             delay(100)
         }
 
-        signInScreenController.detach()
-        assertEquals(expected = expectedState, actual = signInScreenController.currentState)
+        controller.detach()
+        assertEquals(expected = expectedState, actual = controller.currentState)
     }
 
     companion object {

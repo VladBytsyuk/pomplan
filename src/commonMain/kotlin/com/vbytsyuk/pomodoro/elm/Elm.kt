@@ -60,6 +60,7 @@ interface Elm {
 
         override fun observeState(callback: suspend (S) -> Unit) {
             launchCoroutine(Dispatchers.Default) {
+                callback(stateFlow.value)
                 stateFlow.collect { callback(it) }
             }
         }
@@ -67,6 +68,7 @@ interface Elm {
 
         override fun attach() {
             launchCoroutine(Dispatchers.Default) {
+                onActionReceived(actionFlow.value)
                 actionFlow.collect { onActionReceived(it) }
             }
         }
