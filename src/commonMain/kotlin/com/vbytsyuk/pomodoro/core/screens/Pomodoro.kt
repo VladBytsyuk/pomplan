@@ -38,11 +38,16 @@ class Pomodoro(
         fun changeLogicState(newLogicState: LogicState, newCurrentSession: Int = this.currentSession) =
             copy(logicState = newLogicState, currentSession = newCurrentSession)
 
-        fun addSecond() = copy(time = time.addSecond())
         fun takeSecond() = copy(time = time.takeSecond())
 
         fun addPomodoro() = copy(donePomodoroes = this.donePomodoroes + 1)
         fun addSession() = copy(currentSession = this.currentSession + 1)
+
+        fun done(logicState: LogicState, addPomodoro: Boolean, time: PomodoroTime) = this.copy(
+            logicState = logicState,
+            donePomodoroes = if (addPomodoro) donePomodoroes + 1 else donePomodoroes,
+            time = time
+        )
     }
 
     sealed class Action : Elm.Action {
@@ -63,7 +68,7 @@ class Pomodoro(
         object Done : Effect()
     }
 
-    class EffectHandler(private val settingsRepository: SettingsRepository) : Elm.EffectHandler<Effect, Action> {
+    private class EffectHandler(private val settingsRepository: SettingsRepository) : Elm.EffectHandler<Effect, Action> {
         override suspend fun handle(effect: Effect): Action = when (effect) {
             Effect.LoadRules -> {
                 val rules = loadRules()
@@ -84,7 +89,7 @@ class Pomodoro(
         )
     }
 
-    class Reducer : Elm.Reducer<State, Action, Effect> {
+    private class Reducer : Elm.Reducer<State, Action, Effect> {
         override fun reduce(oldState: State, action: Action): Pair<State, Effect?> = when (action) {
             Action.Initialize -> State() to Effect.LoadRules
             is Action.LoadedRules ->
@@ -93,12 +98,18 @@ class Pomodoro(
             is Action.Clicked -> reduceClicked(oldState, action)
             Action.Tick -> reduceTick(oldState)
             Action.Done -> when (oldState.logicState) {
-                WORK ->  {
-                    val updatedState = oldState.copy(logicState = WAIT_FOR_BREAK).addPomodoro()
-                    updatedState.copy(time = if (isLongBreak(updatedState)) updatedState.rules.longBreakTime else updatedState.rules.shortBreakTime) to null
-                }
-                BREAK ->  oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
-                else ->  oldState to null
+                WORK, WAIT_FOR_WORK ->
+                    oldState.done(
+                        logicState = WAIT_FOR_BREAK,
+                        addPomodoro = true,
+                        time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime
+                    ) to null
+                BREAK, WAIT_FOR_BREAK ->
+                    oldState.done(
+                        logicState = WAIT_FOR_WORK,
+                        addPomodoro = false,
+                        time = oldState.rules.workTime
+                    ) to null
             }
         }
 
@@ -112,10 +123,9 @@ class Pomodoro(
 
             Action.Clicked.Stop -> oldState.copy(logicState = WAIT_FOR_WORK) to null
 
-            Action.Clicked.Skip ->  when (oldState.logicState) {
-                WAIT_FOR_WORK -> oldState.changeLogicState(WAIT_FOR_BREAK) to null
-                WAIT_FOR_BREAK -> oldState.changeLogicState(WAIT_FOR_WORK) to null
-                else -> oldState to null
+            Action.Clicked.Skip -> when (oldState.logicState) {
+                WAIT_FOR_WORK, WORK -> oldState.addPomodoro() to Effect.Done
+                WAIT_FOR_BREAK, BREAK -> oldState to Effect.Done
             }
         }
 

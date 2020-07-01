@@ -27,7 +27,7 @@ data class PomodoroTime(val timestamp: Long) {
     operator fun compareTo(other: PomodoroTime): Int = this.timestamp.compareTo(other.timestamp)
     operator fun compareTo(other: Int): Int = this.timestamp.compareTo(other.toLong())
 
-    override fun toString(): String = "[$minutes:${formatSecond(seconds)}]"
+    override fun toString(): String = "$minutes:${formatSecond(seconds)}"
     private fun formatSecond(component: Long) = if (component < 10) "0$component" else "$component"
 }
 
