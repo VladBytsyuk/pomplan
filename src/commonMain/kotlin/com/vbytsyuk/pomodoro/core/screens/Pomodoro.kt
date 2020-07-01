@@ -93,7 +93,10 @@ class Pomodoro(
             is Action.Clicked -> reduceClicked(oldState, action)
             Action.Tick -> reduceTick(oldState)
             Action.Done -> when (oldState.logicState) {
-                WORK ->  oldState.copy(logicState = WAIT_FOR_BREAK, time = PomodoroTime(minutes = 0)).addPomodoro() to null
+                WORK ->  {
+                    val updatedState = oldState.copy(logicState = WAIT_FOR_BREAK).addPomodoro()
+                    updatedState.copy(time = if (isLongBreak(updatedState)) updatedState.rules.longBreakTime else updatedState.rules.shortBreakTime) to null
+                }
                 BREAK ->  oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
                 else ->  oldState to null
             }
@@ -123,18 +126,16 @@ class Pomodoro(
                 stateWithUpdatedTime to effect
             }
             BREAK -> {
-                val rules = oldState.rules
-                val isLongBreak = oldState.donePomodoroes % rules.sessionLength == 0
-                val breakTime = if (isLongBreak) rules.longBreakTime else rules.shortBreakTime
-
-                val stateWithUpdatedTime = oldState.addSecond()
-                val isDone = stateWithUpdatedTime.time >= breakTime
+                val stateWithUpdatedTime = oldState.takeSecond()
+                val isDone = stateWithUpdatedTime.time <= 0
                 val effect = if (isDone) Effect.Done else Effect.Tick
 
-                val newState = if (isLongBreak && isDone) stateWithUpdatedTime.addSession() else stateWithUpdatedTime
+                val newState = if (isLongBreak(oldState) && isDone) stateWithUpdatedTime.addSession() else stateWithUpdatedTime
                 newState to effect
             }
             else -> oldState to null
         }
+
+        private fun isLongBreak(state: State) = state.donePomodoroes % state.rules.sessionLength == 0
     }
 }
