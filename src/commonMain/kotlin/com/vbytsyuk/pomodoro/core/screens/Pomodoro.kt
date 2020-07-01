@@ -22,6 +22,7 @@ class Pomodoro(
     data class State(
         val rules: Rules = Rules(),
         val logicState: LogicState = WAIT_FOR_WORK,
+        val donePomodoroes: Int = 0,
         val currentSession: Int = 1,
         val time: PomodoroTime = PomodoroTime(minutes = 0, seconds = 0)
     ) : Elm.State {
@@ -40,6 +41,7 @@ class Pomodoro(
         fun addSecond() = copy(time = time.addSecond())
         fun takeSecond() = copy(time = time.takeSecond())
 
+        fun addPomodoro() = copy(donePomodoroes = this.donePomodoroes + 1)
         fun addSession() = copy(currentSession = this.currentSession + 1)
     }
 
@@ -91,7 +93,7 @@ class Pomodoro(
             is Action.Clicked -> reduceClicked(oldState, action)
             Action.Tick -> reduceTick(oldState)
             Action.Done -> when (oldState.logicState) {
-                WORK ->  oldState.copy(logicState = WAIT_FOR_BREAK, time = PomodoroTime(minutes = 0)) to null
+                WORK ->  oldState.copy(logicState = WAIT_FOR_BREAK, time = PomodoroTime(minutes = 0)).addPomodoro() to null
                 BREAK ->  oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
                 else ->  oldState to null
             }
@@ -122,7 +124,7 @@ class Pomodoro(
             }
             BREAK -> {
                 val rules = oldState.rules
-                val isLongBreak = oldState.currentSession % rules.sessionLength == 0
+                val isLongBreak = oldState.donePomodoroes % rules.sessionLength == 0
                 val breakTime = if (isLongBreak) rules.longBreakTime else rules.shortBreakTime
 
                 val stateWithUpdatedTime = oldState.addSecond()
