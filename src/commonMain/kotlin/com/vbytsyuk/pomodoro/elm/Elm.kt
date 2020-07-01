@@ -1,7 +1,6 @@
 package com.vbytsyuk.pomodoro.elm
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 
 
 interface Elm {
@@ -26,7 +25,8 @@ interface Elm {
         val currentState: S
 
         fun setAction(action: A)
-        fun observeState(callback: suspend (S) -> Unit)
+        fun subscribeOnState(subscriber: Any, callback: suspend (S) -> Unit)
+        fun unsubscribeFromState(subscriber: Any)
 
         fun attach()
         fun detach()
@@ -39,53 +39,65 @@ interface Elm {
         override val reducer: Reducer<S, A, E>
     ) : Controller<S, A, E> {
 
-        private val actionFlow = MutableStateFlow(initialAction)
-        private val stateFlow = MutableStateFlow(initialState)
+        private val action = Observable(initialAction)
+        private val state = Observable(initialState)
 
-        override val currentState: S get() = stateFlow.value
-
-        private val supervisorJob = SupervisorJob()
-
-        private fun launchCoroutine(
-            dispatcher: CoroutineDispatcher,
-            block: suspend () -> Unit
-        ) = CoroutineScope(dispatcher + supervisorJob).launch { block() }
-
-        private fun stopAllCoroutines() = supervisorJob.cancel()
-
+        override val currentState: S get() = state.get()
 
         override fun setAction(action: A) {
-            actionFlow.value = action
+            this.action.set(action)
         }
 
-        override fun observeState(callback: suspend (S) -> Unit) {
-            launchCoroutine(Dispatchers.Default) {
-                callback(stateFlow.value)
-                stateFlow.collect { callback(it) }
-            }
+        override fun subscribeOnState(subscriber: Any, callback: suspend (S) -> Unit) {
+            state.subscribe(subscriber) { callback(it) }
         }
 
+        override fun unsubscribeFromState(subscriber: Any) {
+            state.unsubscribe(subscriber)
+        }
 
         override fun attach() {
-            launchCoroutine(Dispatchers.Default) {
-                onActionReceived(actionFlow.value)
-                actionFlow.collect { onActionReceived(it) }
-            }
+            action.subscribe(this) { onActionReceived(it) }
         }
 
         override fun detach() {
-            stopAllCoroutines()
+
         }
 
 
         private suspend fun onActionReceived(action: A) {
-            val oldState = stateFlow.value
+            val oldState = state.get()
             val (newState, effect) = reducer.reduce(oldState, action)
-            if (newState != oldState) stateFlow.value = newState
+            if (newState != oldState) state.set(newState)
             if (effect != null) {
                 val newAction = effectHandler.handle(effect)
-                actionFlow.value = newAction
+                this.action.set(newAction)
             }
         }
+    }
+
+    private class Observable<T>(initialValue: T) {
+        private fun launchCoroutine(job: Job, block: suspend () -> Unit) =
+            CoroutineScope(Dispatchers.Default + job).launch { block() }
+
+
+        private val subscribers = mutableMapOf<Any, Pair<Job, suspend (T) -> Unit>>()
+        fun subscribe(subscriber: Any, callback: suspend (T) -> Unit) {
+            val job = SupervisorJob()
+            subscribers[subscriber] = job to callback
+            launchCoroutine(job) { callback(value) }
+        }
+        fun unsubscribe(subscriber: Any) {
+            subscribers[subscriber]?.first?.cancel()
+            subscribers.remove(subscriber)
+        }
+
+        private var value: T = initialValue
+        fun set(newValue: T) {
+            value = newValue
+            subscribers.values.forEach { (job, callback) -> launchCoroutine(job) { callback(newValue) } }
+        }
+        fun get(): T = value
+
     }
 }

@@ -2,7 +2,7 @@ package com.vbytsyuk.pomodoro.core.screens
 
 import com.vbytsyuk.pomodoro.core.api.SettingsRepository
 import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
-import com.vbytsyuk.pomodoro.core.domain.seconds
+import com.vbytsyuk.pomodoro.core.domain.second
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.State.LogicState.*
 import com.vbytsyuk.pomodoro.elm.Elm
 import kotlinx.coroutines.delay
@@ -68,7 +68,7 @@ class Pomodoro(
                 Action.LoadedRules(rules)
             }
             Effect.Tick -> {
-                delay(1.seconds)
+                delay(1.second)
                 Action.Tick
             }
             Effect.Done -> Action.Done
@@ -99,10 +99,10 @@ class Pomodoro(
 
         private fun reduceClicked(oldState: State, action: Action.Clicked): Pair<State, Effect?> = when (action) {
             Action.Clicked.PlayPause -> when (oldState.logicState) {
-                WAIT_FOR_WORK ->  oldState.changeLogicState(WORK) to Effect.Tick
-                WORK ->  oldState.changeLogicState(WAIT_FOR_WORK) to null
-                WAIT_FOR_BREAK ->  oldState.changeLogicState(BREAK) to Effect.Tick
-                BREAK ->  oldState.changeLogicState(WAIT_FOR_BREAK) to null
+                WAIT_FOR_WORK -> oldState.changeLogicState(WORK) to Effect.Tick
+                WORK -> oldState.changeLogicState(WAIT_FOR_WORK) to null
+                WAIT_FOR_BREAK -> oldState.changeLogicState(BREAK) to Effect.Tick
+                BREAK -> oldState.changeLogicState(WAIT_FOR_BREAK) to null
             }
 
             Action.Clicked.Stop -> oldState.copy(logicState = WAIT_FOR_WORK) to null
