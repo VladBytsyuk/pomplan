@@ -31,7 +31,7 @@ data class PomodoroTime(val timestamp: Long) {
     private fun formatSecond(component: Long) = if (component < 10) "0$component" else "$component"
 }
 
-fun PomodoroTime(minutes: Int, seconds: Int = 0): PomodoroTime {
+fun PomodoroTime(minutes: Int = 0, seconds: Int = 0): PomodoroTime {
     require(minutes >= 0) { "Minutes can't be negative" }
     require(seconds in 0..59) { "Seconds should be in [0..59]" }
     return PomodoroTime(timestamp = minutes * MILLIS_IN_MINUTE + seconds * MILLIS_IN_SECOND)
