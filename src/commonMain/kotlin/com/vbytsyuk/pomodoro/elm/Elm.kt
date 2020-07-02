@@ -61,7 +61,7 @@ interface Elm {
         }
 
         override fun detach() {
-
+            action.unsubscribe(this)
         }
 
 

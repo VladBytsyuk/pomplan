@@ -2,7 +2,7 @@ package com.vbytsyuk.pomodoro.core.screens
 
 import com.vbytsyuk.pomodoro.core.api.ApiResult
 import com.vbytsyuk.pomodoro.core.api.AuthApi
-import com.vbytsyuk.pomodoro.core.screens.SignIn.State.SubState.*
+import com.vbytsyuk.pomodoro.core.screens.SignIn.State.LogicState.*
 import com.vbytsyuk.pomodoro.core.screens.social.SocialSignIn
 import com.vbytsyuk.pomodoro.core.utils.Result
 import com.vbytsyuk.pomodoro.elm.Elm
@@ -26,9 +26,9 @@ class SignIn(
     data class State(
         val login: String = "",
         val password: String = "",
-        val subState: SubState = Input
+        val logicState: LogicState = INPUT
     ) : Elm.State {
-        enum class SubState { Input, Loading, Error, Success }
+        enum class LogicState { INPUT, LOADING, ERROR, SUCCESS }
     }
 
     sealed class Action : Elm.Action {
@@ -112,21 +112,21 @@ class SignIn(
         }
 
         private fun reduceChanged(oldState: State, action: Action.Changed): Pair<State, Effect?> = when (action) {
-            is Action.Changed.Login -> oldState.copy(login = action.newLogin, subState = Input) to null
-            is Action.Changed.Password -> oldState.copy(password = action.newPassword, subState = Input) to null
+            is Action.Changed.Login -> oldState.copy(login = action.newLogin, logicState = INPUT) to null
+            is Action.Changed.Password -> oldState.copy(password = action.newPassword, logicState = INPUT) to null
         }
 
         private fun reduceClicked(oldState: State, action: Action.Clicked): Pair<State, Effect?> = when (action) {
             Action.Clicked.SignIn ->
-                oldState.copy(subState = Loading) to Effect.ServerSignIn(oldState.login, oldState.password)
+                oldState.copy(logicState = LOADING) to Effect.ServerSignIn(oldState.login, oldState.password)
 
-            is Action.Clicked.Social -> oldState.copy(subState = Loading) to action.social.effect
-            Action.Clicked.Register -> oldState.copy(subState = Success) to Effect.Register
+            is Action.Clicked.Social -> oldState.copy(logicState = LOADING) to action.social.effect
+            Action.Clicked.Register -> oldState.copy(logicState = SUCCESS) to Effect.Register
         }
 
         private fun reduceResult(oldState: State, action: Action.Result): Pair<State, Effect?> = when (action) {
-            Action.Result.WrongData -> State(subState = Error) to null
-            is Action.Result.SignedIn -> oldState.copy(subState = Success) to null
+            Action.Result.WrongData -> State(logicState = ERROR) to null
+            is Action.Result.SignedIn -> oldState.copy(logicState = SUCCESS) to null
         }
     }
 }

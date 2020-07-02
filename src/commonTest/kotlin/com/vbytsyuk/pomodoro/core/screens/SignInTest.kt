@@ -1,11 +1,11 @@
-package com.vbytsyuk.pomodoro.core
+package com.vbytsyuk.pomodoro.core.screens
 
-import com.vbytsyuk.pomodoro.core.screens.SignIn
+import com.vbytsyuk.pomodoro.core.runTest
 import com.vbytsyuk.pomodoro.core.screens.SignIn.*
+import com.vbytsyuk.pomodoro.core.screens.SignIn.State.LogicState.*
 import com.vbytsyuk.pomodoro.mock.AuthApiMock
 import com.vbytsyuk.pomodoro.mock.SocialSignInMock
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.runBlockingTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -30,7 +30,7 @@ class `Sign In screen` {
         expectedState = State(
             login = CORRECT_LOGIN,
             password = CORRECT_PASSWORD,
-            subState = State.SubState.Success
+            logicState = SUCCESS
         )
     )
 
@@ -45,7 +45,7 @@ class `Sign In screen` {
         expectedState = State(
             login = "",
             password = "",
-            subState = State.SubState.Error
+            logicState = ERROR
         )
     )
 
@@ -60,7 +60,7 @@ class `Sign In screen` {
         expectedState = State(
             login = "",
             password = "",
-            subState = State.SubState.Error
+            logicState = ERROR
         )
     )
 
@@ -75,7 +75,7 @@ class `Sign In screen` {
         expectedState = State(
             login = "",
             password = "",
-            subState = State.SubState.Error
+            logicState = ERROR
         )
     )
 
@@ -89,7 +89,7 @@ class `Sign In screen` {
         expectedState = State(
             login = "",
             password = "",
-            subState = State.SubState.Success
+            logicState = SUCCESS
         )
     )
 
@@ -102,17 +102,17 @@ class `Sign In screen` {
     private val googleSignIn = SocialSignInMock("google")
     private val appleSignIn = SocialSignInMock("apple")
     private val twitterSignIn = SocialSignInMock("twitter")
-
+    
     private fun test(
         actions: List<Action>,
         expectedState: State
-    ) = runBlockingTest {
+    ) = runTest {
         val controller = SignIn(authApiMock, googleSignIn, appleSignIn, twitterSignIn).controller
         controller.attach()
 
         actions.forEach {
             controller.setAction(it)
-            delay(100)
+            delay(50)
         }
 
         controller.detach()
