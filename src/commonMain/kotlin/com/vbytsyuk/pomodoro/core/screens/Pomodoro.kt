@@ -2,7 +2,7 @@ package com.vbytsyuk.pomodoro.core.screens
 
 import com.vbytsyuk.pomodoro.core.api.SettingsRepository
 import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
-import com.vbytsyuk.pomodoro.core.domain.seconds
+import com.vbytsyuk.pomodoro.core.domain.second
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.State.LogicState.*
 import com.vbytsyuk.pomodoro.elm.Elm
 import kotlinx.coroutines.delay
@@ -22,6 +22,7 @@ class Pomodoro(
     data class State(
         val rules: Rules = Rules(),
         val logicState: LogicState = WAIT_FOR_WORK,
+        val donePomodoroes: Int = 0,
         val currentSession: Int = 1,
         val time: PomodoroTime = PomodoroTime(minutes = 0, seconds = 0)
     ) : Elm.State {
@@ -34,13 +35,17 @@ class Pomodoro(
 
         enum class LogicState { WAIT_FOR_WORK, WORK, WAIT_FOR_BREAK, BREAK }
 
+        val isDone: Boolean get() = time <= 0
+        val isLongBreak = donePomodoroes % rules.sessionLength == 0
+
         fun changeLogicState(newLogicState: LogicState, newCurrentSession: Int = this.currentSession) =
             copy(logicState = newLogicState, currentSession = newCurrentSession)
 
-        fun addSecond() = copy(time = time.addSecond())
         fun takeSecond() = copy(time = time.takeSecond())
-
         fun addSession() = copy(currentSession = this.currentSession + 1)
+        fun addPomodoro() = copy(donePomodoroes = donePomodoroes + 1)
+
+        fun done(logicState: LogicState, time: PomodoroTime) = this.copy(logicState = logicState, time = time)
     }
 
     sealed class Action : Elm.Action {
@@ -61,17 +66,17 @@ class Pomodoro(
         object Done : Effect()
     }
 
-    class EffectHandler(private val settingsRepository: SettingsRepository) : Elm.EffectHandler<Effect, Action> {
+    private class EffectHandler(private val settingsRepository: SettingsRepository) : Elm.EffectHandler<Effect, Action> {
         override suspend fun handle(effect: Effect): Action = when (effect) {
             Effect.LoadRules -> {
                 val rules = loadRules()
                 Action.LoadedRules(rules)
             }
             Effect.Tick -> {
-                delay(1.seconds)
+                delay(1.second)
                 Action.Tick
             }
-            Effect.Done -> Action.Done
+            is Effect.Done -> Action.Done
         }
 
         private suspend fun loadRules(): State.Rules = State.Rules(
@@ -82,7 +87,7 @@ class Pomodoro(
         )
     }
 
-    class Reducer : Elm.Reducer<State, Action, Effect> {
+    private class Reducer : Elm.Reducer<State, Action, Effect> {
         override fun reduce(oldState: State, action: Action): Pair<State, Effect?> = when (action) {
             Action.Initialize -> State() to Effect.LoadRules
             is Action.LoadedRules ->
@@ -90,49 +95,59 @@ class Pomodoro(
 
             is Action.Clicked -> reduceClicked(oldState, action)
             Action.Tick -> reduceTick(oldState)
-            Action.Done -> when (oldState.logicState) {
-                WORK ->  oldState.copy(logicState = WAIT_FOR_BREAK, time = PomodoroTime(minutes = 0)) to null
-                BREAK ->  oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
-                else ->  oldState to null
+            is Action.Done -> when (oldState.logicState) {
+                WORK, WAIT_FOR_WORK ->
+                    oldState.done(
+                        logicState = WAIT_FOR_BREAK,
+                        time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime
+                    ) to null
+                BREAK, WAIT_FOR_BREAK ->
+                    oldState.done(
+                        logicState = WAIT_FOR_WORK,
+                        time = oldState.rules.workTime
+                    ) to null
             }
         }
 
         private fun reduceClicked(oldState: State, action: Action.Clicked): Pair<State, Effect?> = when (action) {
             Action.Clicked.PlayPause -> when (oldState.logicState) {
-                WAIT_FOR_WORK ->  oldState.changeLogicState(WORK) to Effect.Tick
-                WORK ->  oldState.changeLogicState(WAIT_FOR_WORK) to null
-                WAIT_FOR_BREAK ->  oldState.changeLogicState(BREAK) to Effect.Tick
-                BREAK ->  oldState.changeLogicState(WAIT_FOR_BREAK) to null
+                WAIT_FOR_WORK -> oldState.changeLogicState(WORK) to Effect.Tick
+                WORK -> oldState.changeLogicState(WAIT_FOR_WORK) to null
+                WAIT_FOR_BREAK -> oldState.changeLogicState(BREAK) to Effect.Tick
+                BREAK -> oldState.changeLogicState(WAIT_FOR_BREAK) to null
             }
 
-            Action.Clicked.Stop -> oldState.copy(logicState = WAIT_FOR_WORK) to null
+            Action.Clicked.Stop -> when (oldState.logicState) {
+                WAIT_FOR_WORK -> oldState.copy(time = oldState.rules.workTime) to null
+                WORK -> oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
+                WAIT_FOR_BREAK -> oldState.copy(time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime) to null
+                BREAK -> oldState.copy(logicState = WAIT_FOR_BREAK, time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime) to null
+            }
 
-            Action.Clicked.Skip ->  when (oldState.logicState) {
-                WAIT_FOR_WORK -> oldState.changeLogicState(WAIT_FOR_BREAK) to null
-                WAIT_FOR_BREAK -> oldState.changeLogicState(WAIT_FOR_WORK) to null
+            Action.Clicked.Skip -> when (oldState.logicState) {
+                WAIT_FOR_WORK, WORK -> oldState.addPomodoro() to Effect.Done
+                WAIT_FOR_BREAK, BREAK -> oldState to Effect.Done
+            }
+        }
+
+        private fun reduceTick(oldState: State): Pair<State, Effect?> {
+            val state = oldState.takeSecond()
+            return when (oldState.logicState) {
+                WORK -> when {
+                    state.isDone -> state.addPomodoro() to Effect.Done
+                    else -> state to Effect.Tick
+                }
+
+                BREAK -> when {
+                    state.isDone && state.isLongBreak -> state.addSession() to Effect.Done
+                    state.isDone -> state to Effect.Done
+                    else -> state to Effect.Tick
+                }
+
                 else -> oldState to null
             }
         }
 
-        private fun reduceTick(oldState: State): Pair<State, Effect?> = when (oldState.logicState) {
-            WORK -> {
-                val stateWithUpdatedTime = oldState.takeSecond()
-                val effect = if (stateWithUpdatedTime.time <= 0) Effect.Done else Effect.Tick
-                stateWithUpdatedTime to effect
-            }
-            BREAK -> {
-                val rules = oldState.rules
-                val isLongBreak = oldState.currentSession % rules.sessionLength == 0
-                val breakTime = if (isLongBreak) rules.longBreakTime else rules.shortBreakTime
-
-                val stateWithUpdatedTime = oldState.addSecond()
-                val isDone = stateWithUpdatedTime.time >= breakTime
-                val effect = if (isDone) Effect.Done else Effect.Tick
-
-                val newState = if (isLongBreak && isDone) stateWithUpdatedTime.addSession() else stateWithUpdatedTime
-                newState to effect
-            }
-            else -> oldState to null
-        }
+        private fun isLongBreak(state: State) = state.donePomodoroes % state.rules.sessionLength == 0
     }
 }

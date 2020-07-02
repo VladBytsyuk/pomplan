@@ -17,18 +17,19 @@ class App(
         val controller: Elm.Controller<S, A, E>
     }
 
+    private val appSubscriber = "AppSubscriber"
     val signIn: Screen<SignIn.State, SignIn.Action, SignIn.Effect> =
         SignIn(authApi, googleSignIn, appleSignIn, twitterSignIn)
-            .apply { controller.observeState { this@App.controller.setAction(Action.ChangedSignInState(it)) } }
+            .apply { controller.subscribeOnState(appSubscriber) { this@App.controller.setAction(Action.ChangedSignInState(it)) } }
     val pomodoro: Screen<Pomodoro.State, Pomodoro.Action, Pomodoro.Effect> =
         Pomodoro(settingsRepository)
-            .apply { controller.observeState { this@App.controller.setAction(Action.ChangedPomodoroState(it)) } }
+            .apply { controller.subscribeOnState(appSubscriber) { this@App.controller.setAction(Action.ChangedPomodoroState(it)) } }
     val statistics: Screen<Statistics.State, Statistics.Action, Statistics.Effect> =
         Statistics()
-            .apply { controller.observeState { this@App.controller.setAction(Action.ChangedStatisticsState(it)) } }
+            .apply { controller.subscribeOnState(appSubscriber) { this@App.controller.setAction(Action.ChangedStatisticsState(it)) } }
     val settings: Screen<Settings.State, Settings.Action, Settings.Effect> =
         Settings()
-            .apply { controller.observeState { this@App.controller.setAction(Action.ChangedSettingsState(it)) } }
+            .apply { controller.subscribeOnState(appSubscriber) { this@App.controller.setAction(Action.ChangedSettingsState(it)) } }
 
     val controller: Elm.Controller<State, Action, Effect> = Elm.ControllerImpl(
         initialState = State(),
