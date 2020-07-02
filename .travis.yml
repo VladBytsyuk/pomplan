@@ -6,6 +6,6 @@ jobs:
     - stage: build
       script: ./gradlew assemble
     - stage: unit test
-      script: ./gradlew :cleanJvmTest :jvmTest --tests "com.vbytsyuk.pomodoro.*"^C
+      script: ./gradlew :cleanJvmTest :jvmTest --tests "com.vbytsyuk.pomodoro.*"
 notifications:
   webhooks: https://fathomless-fjord-24024.herokuapp.com/notify
