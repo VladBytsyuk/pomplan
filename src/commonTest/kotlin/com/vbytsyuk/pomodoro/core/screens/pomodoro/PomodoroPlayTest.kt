@@ -1,6 +1,6 @@
 package com.vbytsyuk.pomodoro.core.screens.pomodoro
 
-import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import com.vbytsyuk.pomodoro.core.domain.milliseconds
 import com.vbytsyuk.pomodoro.core.domain.seconds
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro
@@ -18,7 +18,7 @@ class `Pomodoro PLAY button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = PomodoroTime(seconds = SHORT_BREAK),
+            time = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -33,7 +33,7 @@ class `Pomodoro PLAY button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = PomodoroTime(seconds = WORK - 2),
+            time = pomodoroTime(seconds = WORK - 2),
             logicState = Pomodoro.State.LogicState.WORK
         )
     )
@@ -50,7 +50,7 @@ class `Pomodoro PLAY button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = PomodoroTime(seconds = WORK),
+            time = pomodoroTime(seconds = WORK),
             logicState = Pomodoro.State.LogicState.WORK
         )
     )

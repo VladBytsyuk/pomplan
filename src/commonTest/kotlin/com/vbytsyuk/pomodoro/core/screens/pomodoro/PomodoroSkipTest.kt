@@ -1,6 +1,6 @@
 package com.vbytsyuk.pomodoro.core.screens.pomodoro
 
-import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import com.vbytsyuk.pomodoro.core.domain.milliseconds
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.Action.Clicked.Skip
@@ -21,7 +21,7 @@ class `Pomodoro SKIP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = PomodoroTime(seconds = SHORT_BREAK),
+            time = pomodoroTime(seconds = SHORT_BREAK),
             logicState = WAIT_FOR_BREAK
         )
     )
@@ -37,7 +37,7 @@ class `Pomodoro SKIP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = PomodoroTime(seconds = WORK),
+            time = pomodoroTime(seconds = WORK),
             logicState = WAIT_FOR_WORK
         )
     )

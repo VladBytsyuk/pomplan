@@ -102,7 +102,7 @@ class `Sign In screen` {
     private val googleSignIn = SocialSignInMock("google")
     private val appleSignIn = SocialSignInMock("apple")
     private val twitterSignIn = SocialSignInMock("twitter")
-    
+
     private fun test(
         actions: List<Action>,
         expectedState: State
