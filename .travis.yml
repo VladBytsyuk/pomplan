@@ -1,11 +1,17 @@
 dist: trusty
 language: java
 jdk: oraclejdk8
+#branches:
+#  only:
+#    - master
+#    - develop
 jobs:
   include:
     - stage: build
       script: ./gradlew assemble
     - stage: unit test
       script: ./gradlew :cleanJvmTest :jvmTest --tests "com.vbytsyuk.pomodoro.*"
+    - stage: detekt
+      script: ./gradlew detekt
 notifications:
   webhooks: https://fathomless-fjord-24024.herokuapp.com/notify
