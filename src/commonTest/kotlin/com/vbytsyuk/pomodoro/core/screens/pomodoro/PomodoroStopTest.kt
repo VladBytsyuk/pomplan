@@ -1,6 +1,6 @@
 package com.vbytsyuk.pomodoro.core.screens.pomodoro
 
-import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import com.vbytsyuk.pomodoro.core.domain.milliseconds
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro
 import kotlin.test.Test
@@ -17,7 +17,7 @@ class `Pomodoro STOP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = PomodoroTime(seconds = WORK),
+            time = pomodoroTime(seconds = WORK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_WORK
         )
     )
@@ -33,10 +33,8 @@ class `Pomodoro STOP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = PomodoroTime(seconds = WORK),
+            time = pomodoroTime(seconds = WORK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_WORK
         )
     )
-
-
 }

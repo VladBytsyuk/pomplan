@@ -1,6 +1,6 @@
 package com.vbytsyuk.pomodoro.core.screens.pomodoro
 
-import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import com.vbytsyuk.pomodoro.core.domain.milliseconds
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro
 import kotlin.test.Test
@@ -17,7 +17,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = PomodoroTime(seconds = SHORT_BREAK),
+            time = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -34,7 +34,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 2,
-            time = PomodoroTime(seconds = SHORT_BREAK),
+            time = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -53,7 +53,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 3,
-            time = PomodoroTime(seconds = SHORT_BREAK),
+            time = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -74,7 +74,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 4,
-            time = PomodoroTime(seconds = LONG_BREAK),
+            time = pomodoroTime(seconds = LONG_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )

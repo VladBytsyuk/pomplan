@@ -1,6 +1,7 @@
 package com.vbytsyuk.pomodoro.core
 
 import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -23,13 +24,13 @@ class `Pomodoro time` {
 
     @Test
     fun `Time simple`() = test(
-        time = PomodoroTime(minutes = 25),
+        time = pomodoroTime(minutes = 25),
         minutes = 25
     )
 
     @Test
     fun `Time complex`() = test(
-        time = PomodoroTime(minutes = 6, seconds = 57),
+        time = pomodoroTime(minutes = 6, seconds = 57),
         minutes = 6,
         seconds = 57
     )

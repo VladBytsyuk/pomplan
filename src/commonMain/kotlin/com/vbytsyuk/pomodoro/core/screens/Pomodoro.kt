@@ -2,6 +2,7 @@ package com.vbytsyuk.pomodoro.core.screens
 
 import com.vbytsyuk.pomodoro.core.api.SettingsRepository
 import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import com.vbytsyuk.pomodoro.core.domain.second
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.State.LogicState.*
 import com.vbytsyuk.pomodoro.elm.Elm
@@ -24,12 +25,12 @@ class Pomodoro(
         val logicState: LogicState = WAIT_FOR_WORK,
         val donePomodoroes: Int = 0,
         val currentSession: Int = 1,
-        val time: PomodoroTime = PomodoroTime(minutes = 0, seconds = 0)
+        val time: PomodoroTime = pomodoroTime(minutes = 0, seconds = 0)
     ) : Elm.State {
         data class Rules(
-            val workTime: PomodoroTime = PomodoroTime(minutes = 25),
-            val shortBreakTime: PomodoroTime = PomodoroTime(minutes = 5),
-            val longBreakTime: PomodoroTime = PomodoroTime(minutes = 15),
+            val workTime: PomodoroTime = pomodoroTime(minutes = 25),
+            val shortBreakTime: PomodoroTime = pomodoroTime(minutes = 5),
+            val longBreakTime: PomodoroTime = pomodoroTime(minutes = 15),
             val sessionLength: Int = 4
         )
 
@@ -45,7 +46,11 @@ class Pomodoro(
         fun addSession() = copy(currentSession = this.currentSession + 1)
         fun addPomodoro() = copy(donePomodoroes = donePomodoroes + 1)
 
-        fun done(logicState: LogicState, time: PomodoroTime) = this.copy(logicState = logicState, time = time)
+        fun done(logicState: LogicState, time: PomodoroTime? = null) =
+            this.copy(logicState = logicState, time = time ?: currentBreakTime)
+
+        val currentBreakTime: PomodoroTime get() = if (isLongBreak) rules.longBreakTime else rules.shortBreakTime
+        fun updateBreakTime(): State = copy(time = currentBreakTime)
     }
 
     sealed class Action : Elm.Action {
@@ -66,7 +71,9 @@ class Pomodoro(
         object Done : Effect()
     }
 
-    private class EffectHandler(private val settingsRepository: SettingsRepository) : Elm.EffectHandler<Effect, Action> {
+    private class EffectHandler(
+        private val settingsRepository: SettingsRepository
+    ) : Elm.EffectHandler<Effect, Action> {
         override suspend fun handle(effect: Effect): Action = when (effect) {
             Effect.LoadRules -> {
                 val rules = loadRules()
@@ -97,10 +104,7 @@ class Pomodoro(
             Action.Tick -> reduceTick(oldState)
             is Action.Done -> when (oldState.logicState) {
                 WORK, WAIT_FOR_WORK ->
-                    oldState.done(
-                        logicState = WAIT_FOR_BREAK,
-                        time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime
-                    ) to null
+                    oldState.done(logicState = WAIT_FOR_BREAK).updateBreakTime() to null
                 BREAK, WAIT_FOR_BREAK ->
                     oldState.done(
                         logicState = WAIT_FOR_WORK,
@@ -120,8 +124,8 @@ class Pomodoro(
             Action.Clicked.Stop -> when (oldState.logicState) {
                 WAIT_FOR_WORK -> oldState.copy(time = oldState.rules.workTime) to null
                 WORK -> oldState.copy(logicState = WAIT_FOR_WORK, time = oldState.rules.workTime) to null
-                WAIT_FOR_BREAK -> oldState.copy(time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime) to null
-                BREAK -> oldState.copy(logicState = WAIT_FOR_BREAK, time = if (isLongBreak(oldState)) oldState.rules.longBreakTime else oldState.rules.shortBreakTime) to null
+                WAIT_FOR_BREAK -> oldState.updateBreakTime() to null
+                BREAK -> oldState.copy(logicState = WAIT_FOR_BREAK).updateBreakTime() to null
             }
 
             Action.Clicked.Skip -> when (oldState.logicState) {

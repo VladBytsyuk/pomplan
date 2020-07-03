@@ -1,17 +1,15 @@
 package com.vbytsyuk.pomodoro.core.screens.pomodoro
 
 import com.vbytsyuk.pomodoro.core.api.SettingsRepository
-import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 import com.vbytsyuk.pomodoro.core.runTest
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.*
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.test.assertEquals
 
 
-abstract class `Pomodoro screen` {
+open class `Pomodoro screen` {
     companion object {
         const val WORK = 3
         const val SHORT_BREAK = 1
@@ -19,16 +17,16 @@ abstract class `Pomodoro screen` {
     }
 
     private val settingsRepository = object : SettingsRepository {
-        override suspend fun getWorkTime() = PomodoroTime(seconds = WORK)
-        override suspend fun getShortBreakTime()= PomodoroTime(seconds = SHORT_BREAK)
-        override suspend fun getLongBreakTime()= PomodoroTime(seconds = LONG_BREAK)
+        override suspend fun getWorkTime() = pomodoroTime(seconds = WORK)
+        override suspend fun getShortBreakTime()= pomodoroTime(seconds = SHORT_BREAK)
+        override suspend fun getLongBreakTime()= pomodoroTime(seconds = LONG_BREAK)
         override suspend fun getSessionLength() = 4
     }
 
     protected val rules = State.Rules(
-        workTime = PomodoroTime(seconds = WORK),
-        shortBreakTime = PomodoroTime(seconds = SHORT_BREAK),
-        longBreakTime = PomodoroTime(seconds = LONG_BREAK),
+        workTime = pomodoroTime(seconds = WORK),
+        shortBreakTime = pomodoroTime(seconds = SHORT_BREAK),
+        longBreakTime = pomodoroTime(seconds = LONG_BREAK),
         sessionLength = 4
     )
 
