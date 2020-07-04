@@ -1,5 +1,6 @@
 package com.vbytsyuk.pomodoro.jvm.extensions
 
+import javafx.geometry.Insets
 import tornadofx.*
 
 
@@ -29,3 +30,10 @@ val Int.ex get() = this.toDouble().ex
 
 val Double.percent get() = Dimension(this, Dimension.LinearUnits.percent)
 val Int.percent get() = this.toDouble().percent
+
+
+fun margin(all: Double) =
+    margin(vertical = all, horizontal = all)
+fun margin(vertical: Double, horizontal: Double) =
+    margin(top = vertical, bottom = vertical, left = horizontal, right = horizontal)
+fun margin(top: Double, right: Double, bottom: Double, left: Double) = Insets(top, right, bottom, left)

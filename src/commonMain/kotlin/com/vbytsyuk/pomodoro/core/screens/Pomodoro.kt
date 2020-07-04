@@ -2,8 +2,8 @@ package com.vbytsyuk.pomodoro.core.screens
 
 import com.vbytsyuk.pomodoro.core.api.SettingsRepository
 import com.vbytsyuk.pomodoro.core.domain.PomodoroTime
+import com.vbytsyuk.pomodoro.core.domain.milliseconds
 import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
-import com.vbytsyuk.pomodoro.core.domain.second
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.State.LogicState.*
 import com.vbytsyuk.pomodoro.elm.Elm
 import kotlinx.coroutines.delay
@@ -12,6 +12,9 @@ import kotlinx.coroutines.delay
 class Pomodoro(
     settingsRepository: SettingsRepository
 ) : App.Screen<Pomodoro.State, Pomodoro.Action, Pomodoro.Effect> {
+    companion object {
+        val UPDATE_FREQUENCY = 15.milliseconds
+    }
 
     override val controller: Elm.Controller<State, Action, Effect> = Elm.ControllerImpl(
         initialState = State(),
@@ -42,7 +45,7 @@ class Pomodoro(
         fun changeLogicState(newLogicState: LogicState, newCurrentSession: Int = this.currentSession) =
             copy(logicState = newLogicState, currentSession = newCurrentSession)
 
-        fun takeSecond() = copy(time = time.takeSecond())
+        fun takeSecond() = copy(time = time.takeMilliseconds(n = UPDATE_FREQUENCY.toInt()))
         fun addSession() = copy(currentSession = this.currentSession + 1)
         fun addPomodoro() = copy(donePomodoroes = donePomodoroes + 1)
 
@@ -80,7 +83,7 @@ class Pomodoro(
                 Action.LoadedRules(rules)
             }
             Effect.Tick -> {
-                delay(1.second)
+                delay(UPDATE_FREQUENCY)
                 Action.Tick
             }
             is Effect.Done -> Action.Done
@@ -151,7 +154,5 @@ class Pomodoro(
                 else -> oldState to null
             }
         }
-
-        private fun isLongBreak(state: State) = state.donePomodoroes % state.rules.sessionLength == 0
     }
 }
