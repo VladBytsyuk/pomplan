@@ -43,12 +43,19 @@ class PomodoroView : UIComponent() {
             rectangle(x = 0.0, y = 0.0, width = Sizes.Pomodoro.Progress.SIZE, height = Sizes.Pomodoro.Progress.SIZE) {
                 fillProperty().bind(controller.backgroundColor)
             }
-            arc(centerX = Sizes.Pomodoro.Progress.SIZE / 2, centerY = Sizes.Pomodoro.Progress.SIZE / 2, radiusX = Sizes.Pomodoro.Progress.SIZE / 2, radiusY = Sizes.Pomodoro.Progress.SIZE / 2, startAngle = 90.0) {
+            arc(
+                centerX = Sizes.Pomodoro.Progress.SIZE / 2, centerY = Sizes.Pomodoro.Progress.SIZE / 2,
+                radiusX = Sizes.Pomodoro.Progress.SIZE / 2, radiusY = Sizes.Pomodoro.Progress.SIZE / 2,
+                startAngle = 90.0
+            ) {
                 lengthProperty().bind(controller.angle)
                 type = javafx.scene.shape.ArcType.ROUND
                 fill = Colors.white
             }
-            circle(centerX = Sizes.Pomodoro.Progress.SIZE / 2, centerY = Sizes.Pomodoro.Progress.SIZE / 2, radius = Sizes.Pomodoro.Progress.SIZE / 2 - 16) {
+            circle(
+                centerX = Sizes.Pomodoro.Progress.SIZE / 2, centerY = Sizes.Pomodoro.Progress.SIZE / 2,
+                radius = Sizes.Pomodoro.Progress.SIZE / 2 - 16
+            ) {
                 fillProperty().bind(controller.backgroundColor)
             }
         }
@@ -77,7 +84,9 @@ class PomodoroView : UIComponent() {
         if (vertical != null) minHeight = vertical * SCALING_FACTOR
     }
 
-    private fun EventTarget.iconButton(icon: Icon, action: Action.Clicked, size: Double, big: Boolean = false) = stackpane {
+    private fun EventTarget.iconButton(
+        icon: Icon, action: Action.Clicked, size: Double, big: Boolean = false
+    ) = stackpane {
         val svg = svgpath(icon.path) {
             style {
                 scaleX = (if (big) 3 else 2) * SCALING_FACTOR
