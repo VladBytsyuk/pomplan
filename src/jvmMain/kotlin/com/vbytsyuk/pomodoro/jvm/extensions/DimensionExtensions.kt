@@ -34,6 +34,11 @@ val Int.percent get() = this.toDouble().percent
 
 fun margin(all: Double) =
     margin(vertical = all, horizontal = all)
-fun margin(vertical: Double, horizontal: Double) =
+fun margin(vertical: Double = 0.0, horizontal: Double = 0.0) =
     margin(top = vertical, bottom = vertical, left = horizontal, right = horizontal)
-fun margin(top: Double, right: Double, bottom: Double, left: Double) = Insets(top, right, bottom, left)
+fun margin(
+    top: Double = 0.0,
+    right: Double = 0.0,
+    bottom: Double = 0.0,
+    left: Double = 0.0
+) = Insets(top, right, bottom, left)
