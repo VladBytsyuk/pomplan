@@ -94,16 +94,16 @@ class PomodoroView : UIComponent() {
                 fillProperty().bind(controller.backgroundColor)
             }
         }
-        button("", svg) {
+        button(graphic = svg) {
             action { controller.setAction(action) }
             setMinSize(size, size)
             style {
                 backgroundColor += Colors.white
-                backgroundRadius =
-                    multi(box(all = size.px))
+                backgroundRadius = multi(box(all = size.px))
             }
         }
     }
+
     private fun EventTarget.iconButton(
         iconObservable: ObservableValue<Icon>, action: Action.Clicked, size: Double, big: Boolean = false
     ) = stackpane {
@@ -115,7 +115,7 @@ class PomodoroView : UIComponent() {
                 fillProperty().bind(controller.backgroundColor)
             }
         }
-        button("", svg) {
+        button(graphic = svg) {
             action { controller.setAction(action) }
             setMinSize(size, size)
             style {
@@ -165,18 +165,19 @@ class PomodoroController : PomPlanController<State, Action>(
     val donePomodoroes = SimpleObjectProperty(0)
 
     override fun render(state: State) {
+        println(state)
         val background = when (state.logicState) {
             State.LogicState.WAIT_FOR_WORK, State.LogicState.WORK -> Colors.red
             State.LogicState.WAIT_FOR_BREAK, State.LogicState.BREAK -> Colors.green
         }
         backgroundColor.set(background)
 
-        timeText.set(state.time.toString())
+        timeText.set(state.remainTime.toString())
         val maxTime = when (state.logicState) {
             State.LogicState.WAIT_FOR_WORK, State.LogicState.WORK -> state.rules.workTime
             State.LogicState.WAIT_FOR_BREAK, State.LogicState.BREAK -> state.currentBreakTime
         }
-        angle.set(state.time.timestamp.toDouble() / maxTime.timestamp.toDouble() * 360.0)
+        angle.set(state.remainTime.timestamp.toDouble() / maxTime.timestamp.toDouble() * 360.0)
         this.backgroundColor.set(background)
         this.contentColor.set(Colors.white)
 

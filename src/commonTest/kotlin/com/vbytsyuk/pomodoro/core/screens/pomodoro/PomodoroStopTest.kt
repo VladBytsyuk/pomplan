@@ -17,7 +17,7 @@ class `Pomodoro STOP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = pomodoroTime(seconds = WORK),
+            remainTime = pomodoroTime(seconds = WORK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_WORK
         )
     )
@@ -33,7 +33,7 @@ class `Pomodoro STOP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = pomodoroTime(seconds = WORK),
+            remainTime = pomodoroTime(seconds = WORK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_WORK
         )
     )

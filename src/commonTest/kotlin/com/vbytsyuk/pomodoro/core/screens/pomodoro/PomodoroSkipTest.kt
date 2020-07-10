@@ -21,7 +21,7 @@ class `Pomodoro SKIP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = pomodoroTime(seconds = SHORT_BREAK),
+            remainTime = pomodoroTime(seconds = SHORT_BREAK),
             logicState = WAIT_FOR_BREAK
         )
     )
@@ -37,7 +37,7 @@ class `Pomodoro SKIP button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = pomodoroTime(seconds = WORK),
+            remainTime = pomodoroTime(seconds = WORK),
             logicState = WAIT_FOR_WORK
         )
     )

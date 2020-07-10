@@ -17,7 +17,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = pomodoroTime(seconds = SHORT_BREAK),
+            remainTime = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -34,7 +34,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 2,
-            time = pomodoroTime(seconds = SHORT_BREAK),
+            remainTime = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -53,7 +53,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 3,
-            time = pomodoroTime(seconds = SHORT_BREAK),
+            remainTime = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -74,7 +74,7 @@ class `Pomodoro session test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 4,
-            time = pomodoroTime(seconds = LONG_BREAK),
+            remainTime = pomodoroTime(seconds = LONG_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
