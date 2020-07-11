@@ -13,7 +13,7 @@ class Pomodoro(
     settingsRepository: SettingsRepository
 ) : App.Screen<Pomodoro.State, Pomodoro.Action, Pomodoro.Effect> {
     companion object {
-        val UPDATE_FREQUENCY = 50.milliseconds
+        val UPDATE_FREQUENCY = 8.milliseconds
     }
 
     override val controller: Elm.Controller<State, Action, Effect> = Elm.ControllerImpl(

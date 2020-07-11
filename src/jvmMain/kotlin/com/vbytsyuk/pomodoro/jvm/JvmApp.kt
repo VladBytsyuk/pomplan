@@ -1,5 +1,6 @@
 package com.vbytsyuk.pomodoro.jvm
 
+import com.vbytsyuk.pomodoro.jvm.widgets.Sizes
 import javafx.stage.Stage
 import tornadofx.*
 

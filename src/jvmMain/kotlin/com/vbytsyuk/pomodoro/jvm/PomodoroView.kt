@@ -3,10 +3,11 @@ package com.vbytsyuk.pomodoro.jvm
 import com.vbytsyuk.pomodoro.core.repositories.SettingsRepositoryImpl
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro
 import com.vbytsyuk.pomodoro.core.screens.Pomodoro.*
-import com.vbytsyuk.pomodoro.jvm.Sizes.Design.Button
-import com.vbytsyuk.pomodoro.jvm.Sizes.SCALING_FACTOR
+import com.vbytsyuk.pomodoro.jvm.widgets.Sizes.Design.Button
+import com.vbytsyuk.pomodoro.jvm.widgets.Sizes.SCALING_FACTOR
 import com.vbytsyuk.pomodoro.jvm.extensions.px
 import com.vbytsyuk.pomodoro.jvm.widgets.Colors
+import com.vbytsyuk.pomodoro.jvm.widgets.Sizes
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -120,8 +121,7 @@ class PomodoroView : UIComponent() {
             setMinSize(size, size)
             style {
                 backgroundColor += Colors.white
-                backgroundRadius =
-                    multi(box(all = size.px))
+                backgroundRadius = multi(box(all = size.px))
             }
         }
     }
@@ -165,7 +165,6 @@ class PomodoroController : PomPlanController<State, Action>(
     val donePomodoroes = SimpleObjectProperty(0)
 
     override fun render(state: State) {
-        println(state)
         val background = when (state.logicState) {
             State.LogicState.WAIT_FOR_WORK, State.LogicState.WORK -> Colors.red
             State.LogicState.WAIT_FOR_BREAK, State.LogicState.BREAK -> Colors.green
@@ -182,11 +181,10 @@ class PomodoroController : PomPlanController<State, Action>(
         this.contentColor.set(Colors.white)
 
         donePomodoroes.set(state.donePomodoroes)
-        playPause.set(
-            when (state.logicState) {
-                State.LogicState.WAIT_FOR_WORK, State.LogicState.WAIT_FOR_BREAK -> Icon.PLAY
-                State.LogicState.WORK, State.LogicState.BREAK -> Icon.PAUSE
-            }
-        )
+        val playPauseIcon = when (state.logicState) {
+            State.LogicState.WAIT_FOR_WORK, State.LogicState.WAIT_FOR_BREAK -> Icon.PLAY
+            State.LogicState.WORK, State.LogicState.BREAK -> Icon.PAUSE
+        }
+        playPause.set(playPauseIcon)
     }
 }

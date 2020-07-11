@@ -1,4 +1,4 @@
-package com.vbytsyuk.pomodoro.jvm
+package com.vbytsyuk.pomodoro.jvm.widgets
 
 object Sizes {
     const val SCALING_FACTOR = 2.0
