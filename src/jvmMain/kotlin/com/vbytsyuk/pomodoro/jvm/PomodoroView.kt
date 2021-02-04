@@ -7,7 +7,10 @@ import com.vbytsyuk.pomodoro.jvm.widgets.Sizes.Design.Button
 import com.vbytsyuk.pomodoro.jvm.widgets.Sizes.SCALING_FACTOR
 import com.vbytsyuk.pomodoro.jvm.extensions.px
 import com.vbytsyuk.pomodoro.jvm.widgets.Colors
+import com.vbytsyuk.pomodoro.jvm.widgets.DarkTheme
 import com.vbytsyuk.pomodoro.jvm.widgets.Sizes
+import com.vbytsyuk.pomodoro.jvm.widgets.Sizes.Pomodoro.Progress
+import com.vbytsyuk.pomodoro.jvm.widgets.Theme
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -21,6 +24,7 @@ import tornadofx.*
 
 class PomodoroView : UIComponent() {
     private val controller: PomodoroController by inject()
+    private val theme: Theme = DarkTheme
 
     override val root = vbox {
         space(vertical = 24.0)
@@ -33,31 +37,29 @@ class PomodoroView : UIComponent() {
         vboxConstraints {
             alignment = Pos.CENTER
         }
-
-        controller.backgroundColor.addListener { _, _, color ->
-            style { backgroundColor += color }
-        }
+        style { backgroundColor += theme.colors.background }
     }
 
     private fun EventTarget.progressView() = stackpane {
         group {
-            rectangle(x = 0.0, y = 0.0, width = Sizes.Pomodoro.Progress.SIZE, height = Sizes.Pomodoro.Progress.SIZE) {
-                fillProperty().bind(controller.backgroundColor)
+            rectangle(x = 0.0, y = 0.0, width = Progress.SIZE, height = Progress.SIZE) {
+                fill = theme.colors.background
             }
             arc(
-                centerX = Sizes.Pomodoro.Progress.SIZE / 2, centerY = Sizes.Pomodoro.Progress.SIZE / 2,
-                radiusX = Sizes.Pomodoro.Progress.SIZE / 2, radiusY = Sizes.Pomodoro.Progress.SIZE / 2,
+                centerX = Progress.SIZE / 2, centerY = Progress.SIZE / 2,
+                radiusX = Progress.SIZE / 2, radiusY = Progress.SIZE / 2,
                 startAngle = 90.0
             ) {
                 lengthProperty().bind(controller.angle)
                 type = javafx.scene.shape.ArcType.ROUND
-                fill = Colors.white
+                fill = theme.colors.accent
+                fillProperty().bind(controller.backgroundColor)
             }
             circle(
-                centerX = Sizes.Pomodoro.Progress.SIZE / 2, centerY = Sizes.Pomodoro.Progress.SIZE / 2,
-                radius = Sizes.Pomodoro.Progress.SIZE / 2 - 16
+                centerX = Progress.SIZE / 2, centerY = Progress.SIZE / 2,
+                radius = Progress.SIZE / 2 - 8
             ) {
-                fillProperty().bind(controller.backgroundColor)
+                fill = theme.colors.background
             }
         }
         label(controller.timeText) {
@@ -74,9 +76,9 @@ class PomodoroView : UIComponent() {
         maxHeight = Sizes.Pomodoro.Buttons.HEIGHT
 
         iconButton(Icon.STOP, Action.Clicked.Stop, Button.Small.SIZE)
-        space(horizontal = 16.0)
+        space(horizontal = 16.0 * 4)
         iconButton(controller.playPause, Action.Clicked.PlayPause, Button.Big.SIZE, big = true)
-        space(horizontal = 16.0)
+        space(horizontal = 16.0 * 4)
         iconButton(Icon.SKIP, Action.Clicked.Skip, Button.Small.SIZE)
     }
 
@@ -92,15 +94,13 @@ class PomodoroView : UIComponent() {
             style {
                 scaleX = (if (big) 3 else 2) * SCALING_FACTOR
                 scaleY = (if (big) 3 else 2) * SCALING_FACTOR
-                fillProperty().bind(controller.backgroundColor)
+                fill = theme.colors.content
             }
         }
         button(graphic = svg) {
             action { controller.setAction(action) }
-            setMinSize(size, size)
             style {
-                backgroundColor += Colors.white
-                backgroundRadius = multi(box(all = size.px))
+                backgroundColor += theme.colors.background
             }
         }
     }
@@ -113,16 +113,14 @@ class PomodoroView : UIComponent() {
             style {
                 scaleX = (if (big) 3 else 2) * SCALING_FACTOR
                 scaleY = (if (big) 3 else 2) * SCALING_FACTOR
-                fillProperty().bind(controller.backgroundColor)
+                fill = theme.colors.content
             }
         }
         button(graphic = svg) {
-            action { controller.setAction(action) }
-            setMinSize(size, size)
             style {
-                backgroundColor += Colors.white
-                backgroundRadius = multi(box(all = size.px))
+                backgroundColor += theme.colors.background
             }
+            action { controller.setAction(action) }
         }
     }
 
@@ -141,9 +139,12 @@ class PomodoroView : UIComponent() {
 
     private fun Pane.donePomodoro(number: Int) = circle(radius = 16 * SCALING_FACTOR) {
         fill = null
-        stroke = Colors.white
-        strokeWidth = 4 * SCALING_FACTOR
-        controller.donePomodoroes.addListener { _, _, done -> fill = if (done >= number) Colors.white else null }
+        stroke = theme.colors.textPrimary
+        strokeWidth = 2 * SCALING_FACTOR
+        controller.donePomodoroes.addListener { _, _, done ->
+            fill = if (done >= number) theme.colors.accent else null
+            stroke = if (done >= number) theme.colors.accent else theme.colors.textPrimary
+        }
     }
 }
 
@@ -157,8 +158,10 @@ enum class Icon(val path: String) {
 class PomodoroController : PomPlanController<State, Action>(
     elmController = Pomodoro(settingsRepository = SettingsRepositoryImpl()).controller
 ) {
-    var backgroundColor = SimpleObjectProperty(Colors.white)
-    var contentColor = SimpleObjectProperty(Colors.black)
+    private val theme: Theme = DarkTheme
+
+    var backgroundColor = SimpleObjectProperty(theme.colors.background)
+    var contentColor = SimpleObjectProperty(theme.colors.content)
     var timeText = SimpleStringProperty("")
     var angle = SimpleDoubleProperty(0.0)
     val playPause = SimpleObjectProperty(Icon.PLAY)
@@ -166,8 +169,8 @@ class PomodoroController : PomPlanController<State, Action>(
 
     override fun render(state: State) {
         val background = when (state.logicState) {
-            State.LogicState.WAIT_FOR_WORK, State.LogicState.WORK -> Colors.red
-            State.LogicState.WAIT_FOR_BREAK, State.LogicState.BREAK -> Colors.green
+            State.LogicState.WAIT_FOR_WORK, State.LogicState.WORK -> theme.colors.red
+            State.LogicState.WAIT_FOR_BREAK, State.LogicState.BREAK -> theme.colors.grey
         }
         backgroundColor.set(background)
 
@@ -178,7 +181,7 @@ class PomodoroController : PomPlanController<State, Action>(
         }
         angle.set(state.remainTime.timestamp.toDouble() / maxTime.timestamp.toDouble() * 360.0)
         this.backgroundColor.set(background)
-        this.contentColor.set(Colors.white)
+        this.contentColor.set(theme.colors.content)
 
         donePomodoroes.set(state.donePomodoroes)
         val playPauseIcon = when (state.logicState) {
