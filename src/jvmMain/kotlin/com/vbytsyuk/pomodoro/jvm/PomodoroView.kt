@@ -29,9 +29,13 @@ class PomodoroView : UIComponent() {
     override val root = vbox {
         space(vertical = 24.0)
         progressView()
-        space(vertical = 24.0)
-        buttonsView()
-        space(vertical = 24.0)
+        space(vertical = 24.0 * 2)
+        hbox {
+            space(horizontal = 16.0 * 6)
+            buttonsView()
+            space(horizontal = 16.0 * 6)
+        }
+        space(vertical = 24.0 * 2)
         doneView()
 
         vboxConstraints {
@@ -174,12 +178,23 @@ class PomodoroController : PomPlanController<State, Action>(
         }
         backgroundColor.set(background)
 
-        timeText.set(state.remainTime.toString())
         val maxTime = when (state.logicState) {
             State.LogicState.WAIT_FOR_WORK, State.LogicState.WORK -> state.rules.workTime
             State.LogicState.WAIT_FOR_BREAK, State.LogicState.BREAK -> state.currentBreakTime
         }
-        angle.set(state.remainTime.timestamp.toDouble() / maxTime.timestamp.toDouble() * 360.0)
+        timeText.set(
+            when (state.remainTime) {
+                maxTime -> state.remainTime
+                else -> state.remainTime.addMilliseconds(1000)
+            }.toString()
+        )
+        val newAngle = when (state.logicState) {
+            State.LogicState.WAIT_FOR_WORK,
+            State.LogicState.WORK -> state.remainTime.timestamp.toDouble() / maxTime.timestamp.toDouble() * 360.0
+            State.LogicState.WAIT_FOR_BREAK,
+            State.LogicState.BREAK -> 360 - state.remainTime.timestamp.toDouble() / maxTime.timestamp.toDouble() * 360.0
+        }
+        angle.set(newAngle)
         this.backgroundColor.set(background)
         this.contentColor.set(theme.colors.content)
 
