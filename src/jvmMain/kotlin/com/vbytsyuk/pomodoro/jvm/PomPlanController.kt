@@ -18,7 +18,6 @@ abstract class PomPlanController<S : Elm.State, A : Elm.Action>(
     }
 
 
-
     abstract fun render(state : S)
     fun setAction(action: A) = elmController.setAction(action)
 }

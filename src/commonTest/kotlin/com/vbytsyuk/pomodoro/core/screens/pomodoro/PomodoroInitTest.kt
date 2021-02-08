@@ -11,6 +11,6 @@ class `Pomodoro screen init` : `Pomodoro screen`() {
         actionsWithDelay = listOf(
             Pomodoro.Action.Initialize to 50.milliseconds
         ),
-        expectedState = Pomodoro.State(rules = rules, time = rules.workTime)
+        expectedState = Pomodoro.State(rules = rules, remainTime = rules.workTime)
     )
 }

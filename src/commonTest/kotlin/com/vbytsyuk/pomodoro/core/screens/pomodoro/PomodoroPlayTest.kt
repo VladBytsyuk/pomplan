@@ -18,7 +18,7 @@ class `Pomodoro PLAY button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 1,
-            time = pomodoroTime(seconds = SHORT_BREAK),
+            remainTime = pomodoroTime(seconds = SHORT_BREAK),
             logicState = Pomodoro.State.LogicState.WAIT_FOR_BREAK
         )
     )
@@ -33,7 +33,7 @@ class `Pomodoro PLAY button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = pomodoroTime(seconds = WORK - 2),
+            remainTime = pomodoroTime(seconds = WORK - 2),
             logicState = Pomodoro.State.LogicState.WORK
         )
     )
@@ -50,7 +50,7 @@ class `Pomodoro PLAY button test` : `Pomodoro screen`() {
             rules = rules,
             currentSession = 1,
             donePomodoroes = 0,
-            time = pomodoroTime(seconds = WORK),
+            remainTime = pomodoroTime(seconds = WORK),
             logicState = Pomodoro.State.LogicState.WORK
         )
     )

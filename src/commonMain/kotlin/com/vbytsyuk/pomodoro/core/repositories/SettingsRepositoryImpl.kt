@@ -5,8 +5,8 @@ import com.vbytsyuk.pomodoro.core.domain.pomodoroTime
 
 
 class SettingsRepositoryImpl : SettingsRepository {
-    override suspend fun getWorkTime() = pomodoroTime(minutes = 0, seconds = 5)
-    override suspend fun getShortBreakTime() = pomodoroTime(minutes = 0, seconds = 2)
-    override suspend fun getLongBreakTime() = pomodoroTime(minutes = 0, seconds = 4)
+    override suspend fun getWorkTime() = pomodoroTime(seconds = 10)
+    override suspend fun getShortBreakTime() = pomodoroTime(seconds = 5)
+    override suspend fun getLongBreakTime() = pomodoroTime(seconds = 8)
     override suspend fun getSessionLength() = 4
 }
